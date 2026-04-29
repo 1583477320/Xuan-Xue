@@ -34,6 +34,14 @@ interface FortuneResult {
     学业运: { score: number; description: string };
   };
   每日宜忌: { 宜: string[]; 忌: string[] };
+  推演过程: {
+    step: number;
+    title: string;
+    icon: string;
+    subtitle: string;
+    content: string;
+    highlight: string;
+  }[];
 }
 
 // ==================== 常量 ====================
@@ -1062,6 +1070,128 @@ function ResultPhase({ result, onReset }: { result: FortuneResult; onReset: () =
           >
             💡 {result.五行建议}
           </motion.div>
+        </motion.div>
+
+        {/* 推演过程 */}
+        <motion.div
+          className="oracle-card p-5 md:p-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.65 }}
+        >
+          <div className="corner-ornament corner-tl" />
+          <div className="corner-ornament corner-tr" />
+          <div className="corner-ornament corner-bl" />
+          <div className="corner-ornament corner-br" />
+
+          <div className="relative z-10">
+            <h3 className="golden-text text-lg font-bold mb-1" style={{ letterSpacing: "0.1em" }}>
+              命 理 推 演
+            </h3>
+            <p className="text-xs mb-5" style={{ color: "rgba(201,184,150,0.4)", letterSpacing: "0.05em" }}>
+              天机阁推演全过程，揭示命理推演之逻辑
+            </p>
+
+            <div className="relative">
+              {/* 时间线竖线 */}
+              <div
+                className="absolute left-[15px] top-2 bottom-2"
+                style={{ width: "2px", background: "linear-gradient(180deg, rgba(212,168,83,0.3), rgba(212,168,83,0.08))" }}
+              />
+
+              <div className="space-y-5">
+                {result.推演过程.map((item, i) => (
+                  <motion.div
+                    key={item.step}
+                    className="relative pl-10"
+                    initial={{ opacity: 0, x: -15 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.8 + i * 0.18 }}
+                  >
+                    {/* 步骤圆点 */}
+                    <div className="absolute left-0 top-1">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                        style={{
+                          background: i === result.推演过程.length - 1
+                            ? "linear-gradient(135deg, rgba(212,168,83,0.3), rgba(212,168,83,0.1))"
+                            : "rgba(212,168,83,0.08)",
+                          border: `1.5px solid rgba(212,168,83,${i === result.推演过程.length - 1 ? 0.5 : 0.2})`,
+                          color: i === result.推演过程.length - 1 ? "#d4a853" : "rgba(212,168,83,0.5)",
+                          boxShadow: i === result.推演过程.length - 1
+                            ? "0 0 12px rgba(212,168,83,0.2)"
+                            : "none",
+                          fontFamily: "serif",
+                        }}
+                      >
+                        {item.step}
+                      </div>
+                    </div>
+
+                    {/* 步骤内容 */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <h4
+                          className="text-sm font-bold"
+                          style={{ color: "rgba(240,230,211,0.9)", letterSpacing: "0.05em" }}
+                        >
+                          {item.title}
+                        </h4>
+                        <span
+                          className="text-xs px-2 py-0.5 rounded-full"
+                          style={{
+                            background: "rgba(212,168,83,0.08)",
+                            border: "1px solid rgba(212,168,83,0.12)",
+                            color: "rgba(212,168,83,0.5)",
+                            fontSize: "0.65rem",
+                          }}
+                        >
+                          {item.subtitle}
+                        </span>
+                      </div>
+
+                      <p
+                        className="text-xs leading-relaxed mb-2.5"
+                        style={{ color: "rgba(201,184,150,0.55)" }}
+                      >
+                        {item.content}
+                      </p>
+
+                      {/* 高亮结果 */}
+                      <div
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium"
+                        style={{
+                          background: "linear-gradient(135deg, rgba(212,168,83,0.1), rgba(212,168,83,0.03))",
+                          border: "1px solid rgba(212,168,83,0.15)",
+                          color: "#d4a853",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        <span style={{ opacity: 0.5 }}>▸</span>
+                        {item.highlight}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* 底部结语 */}
+            <motion.div
+              className="mt-6 p-3 rounded-lg text-center"
+              style={{
+                background: "linear-gradient(135deg, rgba(212,168,83,0.06), rgba(212,168,83,0.02))",
+                border: "1px dashed rgba(212,168,83,0.12)",
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2 }}
+            >
+              <p className="text-xs" style={{ color: "rgba(201,184,150,0.45)", letterSpacing: "0.08em" }}>
+                以上推演基于传统命理学理论，结合四柱八字、五行生克、洛书九宫等玄学体系，为 {result.name} 的专属命盘推断。
+              </p>
+            </motion.div>
+          </div>
         </motion.div>
 
         {/* 流年运势 */}
