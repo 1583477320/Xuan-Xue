@@ -280,7 +280,7 @@ function get运势等级(score: number): { level: string; desc: string } {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, gender, birthDate, birthHour, schoolYear, occupation } = body;
+    const { name, gender, birthDate, birthHour, birthPlace, bloodType, zodiacSign, maritalStatus, education, schoolYear, occupation, hobby, luckyNumber } = body;
 
     // 参数验证
     if (!name || !gender || !birthDate || !birthHour) {
@@ -315,7 +315,7 @@ export async function POST(request: NextRequest) {
     );
 
     // 6. 生成确定性哈希用于分数计算
-    const hashBase = `${name}${gender}${birthDate}${birthHour}${schoolYear || ""}${occupation || ""}`;
+    const hashBase = `${name}${gender}${birthDate}${birthHour}${birthPlace || ""}${bloodType || ""}${zodiacSign || ""}${maritalStatus || ""}${education || ""}${schoolYear || ""}${occupation || ""}${hobby || ""}${luckyNumber || ""}`;
     const hash = hashString(hashBase);
 
     // 7. 计算各项运势分数

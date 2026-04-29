@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -295,15 +294,114 @@ function FiveElementsChart({ distribution }: { distribution: Record<string, numb
   );
 }
 
-// ==================== Phase 1: 输入表单 ====================
+// ==================== 星空背景 ====================
+function StarField() {
+  const stars = useMemo(
+    () =>
+      Array.from({ length: 60 }, (_, i) => ({
+        id: i,
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        size: Math.random() * 2 + 1,
+        duration: Math.random() * 4 + 2,
+        delay: Math.random() * 5,
+      })),
+    []
+  );
+  return (
+    <div className="star-field fixed inset-0 pointer-events-none z-0">
+      {stars.map((s) => (
+        <div
+          key={s.id}
+          className="star"
+          style={{
+            left: `${s.left}%`,
+            top: `${s.top}%`,
+            width: `${s.size}px`,
+            height: `${s.size}px`,
+            "--duration": `${s.duration}s`,
+            "--delay": `${s.delay}s`,
+          } as React.CSSProperties}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ==================== Hero 区八卦装饰 ====================
+function HeroBaguaDecoration() {
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {/* 外圈 - 虚线圆环 */}
+      <svg className="absolute hero-bagua-ring" style={{ width: "600px", height: "600px", top: "50%", left: "50%", marginTop: "-300px", marginLeft: "-300px", opacity: 0.06 }}>
+        <circle cx="300" cy="300" r="280" fill="none" stroke="#d4a853" strokeWidth="0.5" strokeDasharray="4 8" />
+      </svg>
+      <svg className="absolute hero-bagua-ring-reverse" style={{ width: "450px", height: "450px", top: "50%", left: "50%", marginTop: "-225px", marginLeft: "-225px", opacity: 0.05 }}>
+        <circle cx="225" cy="225" r="210" fill="none" stroke="#d4a853" strokeWidth="0.5" strokeDasharray="2 12" />
+      </svg>
+
+      {/* 背景大符文 */}
+      {八卦符文.map((rune, i) => {
+        const angle = (i * 45 - 90) * (Math.PI / 180);
+        const dist = 32 + (i % 2) * 6;
+        return (
+          <motion.span
+            key={rune}
+            className="absolute hero-bg-rune"
+            style={{
+              fontSize: "1.6rem",
+              fontFamily: "serif",
+              color: "rgba(212,168,83,0.12)",
+              top: `${50 + Math.sin(angle) * dist}%`,
+              left: `${50 + Math.cos(angle) * dist}%`,
+              animationDelay: `${i * 0.5}s`,
+            }}
+          >
+            {rune}
+          </motion.span>
+        );
+      })}
+    </div>
+  );
+}
+
+// ==================== 小型标签式输入组 ====================
+function MiniInputField({ label, placeholder, value, onChange, error, type = "text" }: {
+  label: string; placeholder: string; value: string; onChange: (v: string) => void; error?: string; type?: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="mystical-label text-xs">{label}</Label>
+      <Input
+        type={type}
+        className="mystical-input text-sm"
+        style={{ padding: "8px 12px" }}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      {error && <p className="text-xs" style={{ color: "#c0392b" }}>{error}</p>}
+    </div>
+  );
+}
+
+// ==================== Phase 1: 输入表单（增强版） ====================
 function InputPhase({ onSubmit }: { onSubmit: (data: FormData) => void }) {
   const [name, setName] = useState("");
   const [gender, setGender] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [birthHour, setBirthHour] = useState("");
+  const [birthPlace, setBirthPlace] = useState("");
+  const [bloodType, setBloodType] = useState("");
+  const [zodiacSign, setZodiacSign] = useState("");
+  const [maritalStatus, setMaritalStatus] = useState("");
+  const [education, setEducation] = useState("");
   const [schoolYear, setSchoolYear] = useState("");
   const [occupation, setOccupation] = useState("");
+  const [hobby, setHobby] = useState("");
+  const [luckyNumber, setLuckyNumber] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showOptional, setShowOptional] = useState(false);
 
   const validate = useCallback(() => {
     const e: Record<string, string> = {};
@@ -322,8 +420,15 @@ function InputPhase({ onSubmit }: { onSubmit: (data: FormData) => void }) {
     fd.append("gender", gender);
     fd.append("birthDate", birthDate);
     fd.append("birthHour", birthHour);
+    if (birthPlace) fd.append("birthPlace", birthPlace.trim());
+    if (bloodType) fd.append("bloodType", bloodType);
+    if (zodiacSign) fd.append("zodiacSign", zodiacSign);
+    if (maritalStatus) fd.append("maritalStatus", maritalStatus);
+    if (education) fd.append("education", education);
     if (schoolYear) fd.append("schoolYear", schoolYear);
     if (occupation) fd.append("occupation", occupation.trim());
+    if (hobby) fd.append("hobby", hobby.trim());
+    if (luckyNumber) fd.append("luckyNumber", luckyNumber);
     onSubmit(fd);
   };
 
@@ -332,142 +437,344 @@ function InputPhase({ onSubmit }: { onSubmit: (data: FormData) => void }) {
 
   return (
     <motion.div
-      className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative z-10"
+      className="min-h-screen flex flex-col items-center px-4 pt-6 pb-16 relative z-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, y: -30 }}
       transition={{ duration: 0.6 }}
     >
-      {/* 标题 */}
+      <StarField />
+      <HeroBaguaDecoration />
+
+      {/* ===== Hero 区 ===== */}
       <motion.div
-        className="text-center mb-10"
-        initial={{ opacity: 0, y: -30 }}
+        className="text-center mb-8 relative"
+        initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.8 }}
+        transition={{ delay: 0.1, duration: 1, ease: "easeOut" }}
       >
-        <h1 className="text-4xl md:text-5xl font-bold golden-text mb-3" style={{ letterSpacing: "0.15em" }}>
+        {/* 太极八卦 Logo */}
+        <motion.div
+          className="mx-auto mb-5 relative"
+          style={{ width: 100, height: 100 }}
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: 0.3, duration: 1.2, ease: "easeOut" }}
+        >
+          <BaguaSymbol size={100} />
+          {/* 光晕脉冲 */}
+          <motion.div
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: "radial-gradient(circle, rgba(212,168,83,0.15) 0%, transparent 70%)",
+              margin: "-30px",
+            }}
+            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </motion.div>
+
+        {/* 主标题 */}
+        <motion.h1
+          className="golden-text mb-2"
+          style={{ fontSize: "clamp(2.2rem, 6vw, 3.5rem)", letterSpacing: "0.2em", lineHeight: 1.2 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+        >
           天 机 阁
-        </h1>
-        <div className="mystical-divider w-48 mx-auto mb-4" />
-        <p className="text-sm md:text-base" style={{ color: "rgba(201,184,150,0.6)", letterSpacing: "0.1em" }}>
-          八字命理 · 五行生克 · 天机推演
-        </p>
+        </motion.h1>
+
+        <motion.div
+          className="mystical-divider w-56 mx-auto mb-4"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ delay: 0.7, duration: 0.8 }}
+        />
+
+        <motion.p
+          className="text-sm md:text-base"
+          style={{ color: "rgba(201,184,150,0.55)", letterSpacing: "0.15em" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+        >
+          八字命理 · 五行生克 · 紫微斗数 · 奇门遁甲
+        </motion.p>
+
+        <motion.p
+          className="mt-3 text-xs"
+          style={{ color: "rgba(201,184,150,0.35)", letterSpacing: "0.08em" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+        >
+          传承千年玄学智慧，揭示命运隐藏的密码
+        </motion.p>
       </motion.div>
 
-      {/* 表单卡片 */}
+      {/* ===== 表单卡片 ===== */}
       <motion.div
-        className="mystical-card glow-card w-full max-w-lg p-6 md:p-8"
-        initial={{ opacity: 0, y: 30 }}
+        className="oracle-card w-full max-w-xl p-6 md:p-8 relative"
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.8 }}
+        transition={{ delay: 0.6, duration: 0.9, ease: "easeOut" }}
       >
-        <div className="space-y-5">
-          {/* 姓名 */}
-          <div className="space-y-2">
-            <Label className="mystical-label">姓名</Label>
-            <Input
-              className="mystical-input"
-              placeholder="请输入您的姓名"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            {errors.name && <p className="text-xs" style={{ color: "#c0392b" }}>{errors.name}</p>}
+        {/* 装饰角 */}
+        <div className="corner-ornament corner-tl" />
+        <div className="corner-ornament corner-tr" />
+        <div className="corner-ornament corner-bl" />
+        <div className="corner-ornament corner-br" />
+        {/* 光束扫过 */}
+        <div className="light-sweep" />
+
+        {/* 必填区域 */}
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-5">
+            <div className="form-section-title mb-0 border-b-0 pb-0">
+              <span className="dot" />
+              生辰八字
+            </div>
+            <span className="section-badge">必填</span>
           </div>
 
-          {/* 性别 */}
-          <div className="space-y-2">
-            <Label className="mystical-label">性别</Label>
-            <RadioGroup
-              value={gender}
-              onValueChange={setGender}
-              className="flex gap-6"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="男" id="male" className="mystical-radio" />
-                <Label htmlFor="male" className="mystical-label cursor-pointer">男</Label>
+          <div className="space-y-4">
+            {/* 姓名 + 性别 一行 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="mystical-label text-xs">姓名</Label>
+                <Input
+                  className="mystical-input text-sm"
+                  style={{ padding: "9px 12px" }}
+                  placeholder="请输入您的姓名"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                {errors.name && <p className="text-xs" style={{ color: "#c0392b" }}>{errors.name}</p>}
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="女" id="female" className="mystical-radio" />
-                <Label htmlFor="female" className="mystical-label cursor-pointer">女</Label>
+              <div className="space-y-1.5">
+                <Label className="mystical-label text-xs">性别</Label>
+                <Select value={gender} onValueChange={setGender}>
+                  <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                    <SelectValue placeholder="请选择性别" />
+                  </SelectTrigger>
+                  <SelectContent className="mystical-select">
+                    <SelectItem value="男">男 (阳)</SelectItem>
+                    <SelectItem value="女">女 (阴)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.gender && <p className="text-xs" style={{ color: "#c0392b" }}>{errors.gender}</p>}
               </div>
-            </RadioGroup>
-            {errors.gender && <p className="text-xs" style={{ color: "#c0392b" }}>{errors.gender}</p>}
-          </div>
+            </div>
 
-          {/* 出生日期 */}
-          <div className="space-y-2">
-            <Label className="mystical-label">出生日期</Label>
-            <Input
-              type="date"
-              className="mystical-input"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              max={new Date().toISOString().split("T")[0]}
-            />
-            {errors.birthDate && <p className="text-xs" style={{ color: "#c0392b" }}>{errors.birthDate}</p>}
-          </div>
-
-          {/* 出生时辰 */}
-          <div className="space-y-2">
-            <Label className="mystical-label">出生时辰</Label>
-            <Select value={birthHour} onValueChange={setBirthHour}>
-              <SelectTrigger className="mystical-input">
-                <SelectValue placeholder="请选择出生时辰" />
-              </SelectTrigger>
-              <SelectContent className="mystical-select">
-                {时辰列表.map((sh) => (
-                  <SelectItem key={sh.value} value={sh.value}>
-                    {sh.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.birthHour && <p className="text-xs" style={{ color: "#c0392b" }}>{errors.birthHour}</p>}
-          </div>
-
-          {/* 入学时间 */}
-          <div className="space-y-2">
-            <Label className="mystical-label">
-              入学时间 <span style={{ color: "rgba(154,139,114,0.5)" }}>(选填)</span>
-            </Label>
-            <Select value={schoolYear} onValueChange={setSchoolYear}>
-              <SelectTrigger className="mystical-input">
-                <SelectValue placeholder="请选择入学年份" />
-              </SelectTrigger>
-              <SelectContent className="mystical-select">
-                {years.map((y) => (
-                  <SelectItem key={y} value={String(y)}>
-                    {y}年
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 当前职业 */}
-          <div className="space-y-2">
-            <Label className="mystical-label">
-              当前职业 <span style={{ color: "rgba(154,139,114,0.5)" }}>(选填)</span>
-            </Label>
-            <Input
-              className="mystical-input"
-              placeholder="请输入您的当前职业"
-              value={occupation}
-              onChange={(e) => setOccupation(e.target.value)}
-            />
+            {/* 出生日期 + 出生时辰 一行 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="mystical-label text-xs">出生日期</Label>
+                <Input
+                  type="date"
+                  className="mystical-input text-sm"
+                  style={{ padding: "9px 12px" }}
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                />
+                {errors.birthDate && <p className="text-xs" style={{ color: "#c0392b" }}>{errors.birthDate}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label className="mystical-label text-xs">出生时辰</Label>
+                <Select value={birthHour} onValueChange={setBirthHour}>
+                  <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                    <SelectValue placeholder="请选择时辰" />
+                  </SelectTrigger>
+                  <SelectContent className="mystical-select">
+                    {时辰列表.map((sh) => (
+                      <SelectItem key={sh.value} value={sh.value}>
+                        {sh.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.birthHour && <p className="text-xs" style={{ color: "#c0392b" }}>{errors.birthHour}</p>}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 提交按钮 */}
-        <div className="mt-8 flex justify-center">
-          <button onClick={handleSubmit} className="mystical-button text-base">
-            开 始 占 卜
+        {/* 展开选填区按钮 */}
+        <div className="relative z-10 my-5">
+          <div className="mystical-divider" />
+          <button
+            className="mx-auto mt-4 flex items-center gap-2 text-xs cursor-pointer bg-transparent border-0"
+            style={{ color: "rgba(212,168,83,0.6)", letterSpacing: "0.08em" }}
+            onClick={() => setShowOptional(!showOptional)}
+          >
+            <motion.span animate={{ rotate: showOptional ? 180 : 0 }} transition={{ duration: 0.3 }}>
+              ▼
+            </motion.span>
+            {showOptional ? "收起详细信息" : "展开更多详细信息"}
+            <span style={{ color: "rgba(212,168,83,0.3)" }}>({showOptional ? "收起" : "可选填"})</span>
           </button>
         </div>
 
-        <p className="text-center text-xs mt-4" style={{ color: "rgba(154,139,114,0.4)" }}>
-          仅供娱乐参考，不构成任何决策建议
-        </p>
+        {/* 选填区域（可展开） */}
+        <AnimatePresence>
+          {showOptional && (
+            <motion.div
+              className="relative z-10"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              style={{ overflow: "hidden" }}
+            >
+              <div className="optional-banner mb-5">
+                以下信息可帮助更精准地推演您的命盘，填写越多，解读越详细
+              </div>
+
+              {/* 个人特征区 */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="form-section-title mb-0 border-b-0 pb-0">
+                  <span className="dot" style={{ background: "#c9956b", boxShadow: "0 0 8px rgba(201,149,107,0.5)" }} />
+                  个人特征
+                </div>
+                <span className="section-badge" style={{ borderColor: "rgba(201,149,107,0.2)", color: "rgba(201,149,107,0.7)", background: "rgba(201,149,107,0.08)" }}>
+                  选填
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <MiniInputField label="出生地" placeholder="如：北京" value={birthPlace} onChange={setBirthPlace} />
+                <div className="space-y-1.5">
+                  <Label className="mystical-label text-xs">血型</Label>
+                  <Select value={bloodType} onValueChange={setBloodType}>
+                    <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                      <SelectValue placeholder="选择血型" />
+                    </SelectTrigger>
+                    <SelectContent className="mystical-select">
+                      {"ABO".split("").map((t) => (
+                        <SelectItem key={t} value={t}>{t}型</SelectItem>
+                      ))}
+                      <SelectItem value="AB">AB型</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="mystical-label text-xs">星座</Label>
+                  <Select value={zodiacSign} onValueChange={setZodiacSign}>
+                    <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                      <SelectValue placeholder="选择星座" />
+                    </SelectTrigger>
+                    <SelectContent className="mystical-select">
+                      {["白羊座","金牛座","双子座","巨蟹座","狮子座","处女座","天秤座","天蝎座","射手座","摩羯座","水瓶座","双鱼座"].map((z) => (
+                        <SelectItem key={z} value={z}>{z}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* 人生经历区 */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="form-section-title mb-0 border-b-0 pb-0">
+                  <span className="dot" style={{ background: "#4ade80", boxShadow: "0 0 8px rgba(74,222,128,0.5)" }} />
+                  人生经历
+                </div>
+                <span className="section-badge" style={{ borderColor: "rgba(74,222,128,0.2)", color: "rgba(74,222,128,0.7)", background: "rgba(74,222,128,0.08)" }}>
+                  选填
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div className="space-y-1.5">
+                  <Label className="mystical-label text-xs">婚姻状态</Label>
+                  <Select value={maritalStatus} onValueChange={setMaritalStatus}>
+                    <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                      <SelectValue placeholder="选择婚姻状态" />
+                    </SelectTrigger>
+                    <SelectContent className="mystical-select">
+                      {["未婚","恋爱中","已婚","离异"].map((m) => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="mystical-label text-xs">学历</Label>
+                  <Select value={education} onValueChange={setEducation}>
+                    <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                      <SelectValue placeholder="选择最高学历" />
+                    </SelectTrigger>
+                    <SelectContent className="mystical-select">
+                      {["高中及以下","大专","本科","硕士","博士"].map((e) => (
+                        <SelectItem key={e} value={e}>{e}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <MiniInputField label="入学/毕业年份" placeholder="如：2018" value={schoolYear} onChange={setSchoolYear} />
+                <MiniInputField label="当前职业" placeholder="如：软件工程师" value={occupation} onChange={setOccupation} />
+              </div>
+
+              {/* 兴趣偏好区 */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="form-section-title mb-0 border-b-0 pb-0">
+                  <span className="dot" style={{ background: "#f87171", boxShadow: "0 0 8px rgba(248,113,113,0.5)" }} />
+                  兴趣偏好
+                </div>
+                <span className="section-badge" style={{ borderColor: "rgba(248,113,113,0.2)", color: "rgba(248,113,113,0.7)", background: "rgba(248,113,113,0.08)" }}>
+                  选填
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <MiniInputField label="兴趣爱好" placeholder="如：书法、冥想、旅行" value={hobby} onChange={setHobby} />
+                <MiniInputField label="幸运数字" placeholder="如：3、7、9" value={luckyNumber} onChange={setLuckyNumber} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* 提交按钮 */}
+        <div className="relative z-10 mt-8 flex flex-col items-center gap-4">
+          <motion.button
+            onClick={handleSubmit}
+            className="mystical-button-hero"
+            whileTap={{ scale: 0.97 }}
+          >
+            启 动 天 机 推 演
+          </motion.button>
+          <p className="text-xs" style={{ color: "rgba(154,139,114,0.35)", letterSpacing: "0.05em" }}>
+            仅供娱乐参考，不构成任何决策建议
+          </p>
+        </div>
+      </motion.div>
+
+      {/* 底部信任指标 */}
+      <motion.div
+        className="mt-8 flex flex-wrap justify-center gap-6 md:gap-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2, duration: 0.8 }}
+      >
+        {[
+          { icon: "☯", text: "八卦命理" },
+          { icon: "卍", text: "五行生克" },
+          { icon: "⚚", text: "紫微斗数" },
+          { icon: "◈", text: "奇门遁甲" },
+        ].map((item, i) => (
+          <motion.div
+            key={item.text}
+            className="flex items-center gap-2"
+            style={{ color: "rgba(201,184,150,0.3)", fontSize: "0.75rem", letterSpacing: "0.05em" }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.4 + i * 0.15 }}
+          >
+            <span style={{ fontSize: "1rem", color: "rgba(212,168,83,0.35)" }}>{item.icon}</span>
+            <span>{item.text}</span>
+          </motion.div>
+        ))}
       </motion.div>
     </motion.div>
   );
