@@ -46,3 +46,40 @@
 - 完整的表单验证
 - 响应式设计适配移动端和桌面端
 - 自定义 SVG 八卦图案包含完整的太极阴阳和八卦卦象
+
+## 2026-04-29 增强功能更新
+
+### 概述
+新增"事情预测"特色功能、扩展用户输入字段、优化标签命名，增强用户互动体验。
+
+### 文件修改清单
+
+1. **`src/app/page.tsx`** (修改)
+   - 重命名 `schoolYear` → `graduationYear`，标签从"入学/毕业年份"改为"毕业年份"，placeholder改为"如：2020"
+   - `FortuneResult` 接口新增 `事情预测` 可选字段（task、category、timeframe、successRate、level、analysis、advice、luckyTime、luckyDirection、keyFactor）
+   - `CircularProgress` 组件新增 `label` prop，默认值"综合运势"，事情预测中使用"成功率"
+   - **InputPhase 新增输入字段**：
+     - 更多信息区：现居地、手机尾号(后4位)、梦想职业、近期状态(Select)
+     - 事情预测区（紫色主题，始终可见）：您想做的事(textarea)、事情类别(Select)、计划时间(Select)
+   - **InputPhase handleSubmit** 新增所有新字段的 FormData 提交逻辑
+   - **ResultPhase** 新增"事情预测结果"卡片：展示成功率圆形进度、预测事项、命理分析、关键因素/吉祥时辰/吉利方位三栏、天机建议
+
+2. **`src/app/api/fortune/route.ts`** (修改)
+   - 新增 `FortuneResult` 接口定义（用于类型标注）
+   - POST 参数解构新增：`graduationYear, residence, phoneLastDigits, dreamCareer, recentMood, taskDescription, taskCategory, taskTimeframe`
+   - `hashBase` 更新包含新字段
+   - 新增事情预测计算逻辑：
+     - 基于任务特定哈希生成原始成功率
+     - 结合对应运势分数（40%）与任务哈希（60%）混合计算最终成功率
+     - 事情类别→运势维度映射（学业考试→学业运、创业投资→财富运等）
+     - 五级运势等级判定（大吉/上吉/中吉/小凶/凶）
+     - 命理分析模板基于四柱八字、五行、命卦动态生成
+     - 吉祥时辰、吉利方位、关键因素、天机建议
+
+3. **`src/app/globals.css`** (修改)
+   - 新增 `textarea.mystical-input` 系列样式（background、border、color、focus、placeholder）
+
+### 技术亮点
+- 事情预测成功率计算融合命盘运势与任务特定因素，结果更具个性化
+- 紫色主题区分预测功能区与其他表单区域
+- CircularProgress 组件 label prop 复用，支持不同场景显示不同标签

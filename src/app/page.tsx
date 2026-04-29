@@ -34,6 +34,18 @@ interface FortuneResult {
     学业运: { score: number; description: string };
   };
   每日宜忌: { 宜: string[]; 忌: string[] };
+  事情预测?: {
+    task: string;
+    category: string;
+    timeframe: string;
+    successRate: number;
+    level: string;
+    analysis: string;
+    advice: string;
+    luckyTime: string;
+    luckyDirection: string;
+    keyFactor: string;
+  };
   推演过程: {
     step: number;
     title: string;
@@ -206,7 +218,7 @@ function BaguaSymbol({ size = 200, className = "" }: { size?: number; className?
 }
 
 // ==================== 圆形进度指示器 ====================
-function CircularProgress({ value, size = 140, strokeWidth = 8 }: { value: number; size?: number; strokeWidth?: number }) {
+function CircularProgress({ value, size = 140, strokeWidth = 8, label = "综合运势" }: { value: number; size?: number; strokeWidth?: number; label?: string }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (value / 100) * circumference;
@@ -249,7 +261,7 @@ function CircularProgress({ value, size = 140, strokeWidth = 8 }: { value: numbe
           {value}
         </motion.span>
         <span className="text-xs mt-1" style={{ color: "rgba(201,184,150,0.6)" }}>
-          综合运势
+          {label}
         </span>
       </div>
     </div>
@@ -404,10 +416,17 @@ function InputPhase({ onSubmit }: { onSubmit: (data: FormData) => void }) {
   const [zodiacSign, setZodiacSign] = useState("");
   const [maritalStatus, setMaritalStatus] = useState("");
   const [education, setEducation] = useState("");
-  const [schoolYear, setSchoolYear] = useState("");
+  const [graduationYear, setGraduationYear] = useState("");
   const [occupation, setOccupation] = useState("");
   const [hobby, setHobby] = useState("");
   const [luckyNumber, setLuckyNumber] = useState("");
+  const [residence, setResidence] = useState("");
+  const [phoneLastDigits, setPhoneLastDigits] = useState("");
+  const [dreamCareer, setDreamCareer] = useState("");
+  const [recentMood, setRecentMood] = useState("");
+  const [taskDescription, setTaskDescription] = useState("");
+  const [taskCategory, setTaskCategory] = useState("");
+  const [taskTimeframe, setTaskTimeframe] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showOptional, setShowOptional] = useState(false);
 
@@ -433,10 +452,17 @@ function InputPhase({ onSubmit }: { onSubmit: (data: FormData) => void }) {
     if (zodiacSign) fd.append("zodiacSign", zodiacSign);
     if (maritalStatus) fd.append("maritalStatus", maritalStatus);
     if (education) fd.append("education", education);
-    if (schoolYear) fd.append("schoolYear", schoolYear);
+    if (graduationYear) fd.append("graduationYear", graduationYear);
     if (occupation) fd.append("occupation", occupation.trim());
     if (hobby) fd.append("hobby", hobby.trim());
     if (luckyNumber) fd.append("luckyNumber", luckyNumber);
+    if (residence) fd.append("residence", residence.trim());
+    if (phoneLastDigits) fd.append("phoneLastDigits", phoneLastDigits);
+    if (dreamCareer) fd.append("dreamCareer", dreamCareer.trim());
+    if (recentMood) fd.append("recentMood", recentMood);
+    if (taskDescription) fd.append("taskDescription", taskDescription.trim());
+    if (taskCategory) fd.append("taskCategory", taskCategory);
+    if (taskTimeframe) fd.append("taskTimeframe", taskTimeframe);
     onSubmit(fd);
   };
 
@@ -720,7 +746,7 @@ function InputPhase({ onSubmit }: { onSubmit: (data: FormData) => void }) {
                     </SelectContent>
                   </Select>
                 </div>
-                <MiniInputField label="入学/毕业年份" placeholder="如：2018" value={schoolYear} onChange={setSchoolYear} />
+                <MiniInputField label="毕业年份" placeholder="如：2020" value={graduationYear} onChange={setGraduationYear} />
                 <MiniInputField label="当前职业" placeholder="如：软件工程师" value={occupation} onChange={setOccupation} />
               </div>
 
@@ -735,13 +761,104 @@ function InputPhase({ onSubmit }: { onSubmit: (data: FormData) => void }) {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <MiniInputField label="兴趣爱好" placeholder="如：书法、冥想、旅行" value={hobby} onChange={setHobby} />
                 <MiniInputField label="幸运数字" placeholder="如：3、7、9" value={luckyNumber} onChange={setLuckyNumber} />
+              </div>
+
+              {/* 更多个人信息区 */}
+              <div className="flex items-center gap-2 mb-4 mt-2">
+                <div className="form-section-title mb-0 border-b-0 pb-0">
+                  <span className="dot" style={{ background: "#60a5fa", boxShadow: "0 0 8px rgba(96,165,250,0.5)" }} />
+                  更多信息
+                </div>
+                <span className="section-badge" style={{ borderColor: "rgba(96,165,250,0.2)", color: "rgba(96,165,250,0.7)", background: "rgba(96,165,250,0.08)" }}>
+                  选填
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <MiniInputField label="现居地" placeholder="如：上海" value={residence} onChange={setResidence} />
+                <MiniInputField label="手机尾号(后4位)" placeholder="如：8888" value={phoneLastDigits} onChange={setPhoneLastDigits} />
+                <MiniInputField label="梦想职业" placeholder="如：宇航员" value={dreamCareer} onChange={setDreamCareer} />
+                <div className="space-y-1.5">
+                  <Label className="mystical-label text-xs">近期状态</Label>
+                  <Select value={recentMood} onValueChange={setRecentMood}>
+                    <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                      <SelectValue placeholder="选择近期状态" />
+                    </SelectTrigger>
+                    <SelectContent className="mystical-select">
+                      {["精力充沛","平稳安定","焦虑不安","迷茫困惑","充满期待","压力较大","心情愉悦","有些低落"].map((m) => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* 事情预测区 - always visible, before submit button */}
+        <div className="relative z-10 mt-6">
+          <div className="mystical-divider mb-5" />
+          <div className="flex items-center gap-2 mb-4">
+            <div className="form-section-title mb-0 border-b-0 pb-0">
+              <span className="dot" style={{ background: "#c084fc", boxShadow: "0 0 8px rgba(192,132,252,0.5)" }} />
+              事情预测
+            </div>
+            <span className="section-badge" style={{ borderColor: "rgba(192,132,252,0.2)", color: "rgba(192,132,252,0.7)", background: "rgba(192,132,252,0.08)" }}>
+              特色功能
+            </span>
+          </div>
+
+          <div className="p-4 rounded-lg mb-4" style={{ background: "rgba(192,132,252,0.04)", border: "1px solid rgba(192,132,252,0.1)" }}>
+            <p className="text-xs" style={{ color: "rgba(192,132,252,0.5)" }}>
+              输入您近期打算做的一件事，天机阁将结合您的命盘推演此事成功率
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="mystical-label text-xs">您想做的事</Label>
+              <textarea
+                className="mystical-input text-sm w-full"
+                style={{ padding: "10px 12px", minHeight: "80px", resize: "vertical" }}
+                placeholder="例如：考研上岸、创业成功、表白成功、减肥20斤..."
+                value={taskDescription}
+                onChange={(e) => setTaskDescription(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="mystical-label text-xs">事情类别</Label>
+                <Select value={taskCategory} onValueChange={setTaskCategory}>
+                  <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                    <SelectValue placeholder="选择类别" />
+                  </SelectTrigger>
+                  <SelectContent className="mystical-select">
+                    {["学业考试","求职面试","创业投资","感情表白","健康养生","升职加薪","考试考证","人际交往","其他"].map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="mystical-label text-xs">计划时间</Label>
+                <Select value={taskTimeframe} onValueChange={setTaskTimeframe}>
+                  <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                    <SelectValue placeholder="选择时间" />
+                  </SelectTrigger>
+                  <SelectContent className="mystical-select">
+                    {["本周内","本月内","三个月内","半年内","一年内","不确定"].map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* 提交按钮 */}
         <div className="relative z-10 mt-8 flex flex-col items-center gap-4">
@@ -1328,6 +1445,92 @@ function ResultPhase({ result, onReset }: { result: FortuneResult; onReset: () =
             </motion.div>
           </div>
         </motion.div>
+
+        {/* 事情预测结果 */}
+        {result.事情预测 && (
+          <motion.div
+            className="oracle-card p-5 md:p-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+          >
+            <div className="corner-ornament corner-tl" />
+            <div className="corner-ornament corner-tr" />
+            <div className="corner-ornament corner-bl" />
+            <div className="corner-ornament corner-br" />
+            <div className="light-sweep" />
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-5">
+                <h3 className="golden-text text-lg font-bold" style={{ letterSpacing: "0.1em" }}>
+                  事 情 预 测
+                </h3>
+                <span
+                  className="px-2 py-0.5 rounded-full text-xs"
+                  style={{ background: "rgba(192,132,252,0.12)", border: "1px solid rgba(192,132,252,0.2)", color: "rgba(192,132,252,0.8)" }}
+                >
+                  {result.事情预测.category}
+                </span>
+              </div>
+
+              {/* Task description */}
+              <div className="mb-5 p-3 rounded-lg" style={{ background: "rgba(192,132,252,0.04)", border: "1px solid rgba(192,132,252,0.08)" }}>
+                <p className="text-xs mb-1" style={{ color: "rgba(192,132,252,0.5)" }}>预测事项</p>
+                <p className="text-sm font-medium" style={{ color: "rgba(240,230,211,0.9)" }}>
+                  {result.事情预测.task}
+                </p>
+                <p className="text-xs mt-1" style={{ color: "rgba(201,184,150,0.4)" }}>
+                  计划时间：{result.事情预测.timeframe}
+                </p>
+              </div>
+
+              {/* Success rate - big circular display */}
+              <div className="flex flex-col items-center mb-5">
+                <CircularProgress value={result.事情预测.successRate} size={130} strokeWidth={10} label="成功率" />
+                <motion.div className="mt-3 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
+                  <span
+                    className="text-xl font-bold"
+                    style={{
+                      color: result.事情预测.successRate >= 75 ? "#4ade80"
+                        : result.事情预测.successRate >= 50 ? "#d4a853"
+                        : "#f87171",
+                    }}
+                  >
+                    {result.事情预测.level}
+                  </span>
+                </motion.div>
+              </div>
+
+              {/* Analysis and details */}
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg" style={{ background: "rgba(15,8,25,0.6)", border: "1px solid rgba(212,168,83,0.08)" }}>
+                  <p className="text-xs mb-1 font-medium" style={{ color: "rgba(212,168,83,0.7)" }}>命理分析</p>
+                  <p className="text-xs leading-relaxed" style={{ color: "rgba(201,184,150,0.6)" }}>{result.事情预测.analysis}</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-3 rounded-lg text-center" style={{ background: "rgba(15,8,25,0.6)", border: "1px solid rgba(212,168,83,0.08)" }}>
+                    <p className="text-xs mb-1" style={{ color: "rgba(201,184,150,0.4)" }}>关键因素</p>
+                    <p className="text-sm font-medium" style={{ color: "#d4a853" }}>{result.事情预测.keyFactor}</p>
+                  </div>
+                  <div className="p-3 rounded-lg text-center" style={{ background: "rgba(15,8,25,0.6)", border: "1px solid rgba(212,168,83,0.08)" }}>
+                    <p className="text-xs mb-1" style={{ color: "rgba(201,184,150,0.4)" }}>吉祥时辰</p>
+                    <p className="text-sm font-medium" style={{ color: "#d4a853" }}>{result.事情预测.luckyTime}</p>
+                  </div>
+                  <div className="p-3 rounded-lg text-center" style={{ background: "rgba(15,8,25,0.6)", border: "1px solid rgba(212,168,83,0.08)" }}>
+                    <p className="text-xs mb-1" style={{ color: "rgba(201,184,150,0.4)" }}>吉利方位</p>
+                    <p className="text-sm font-medium" style={{ color: "#d4a853" }}>{result.事情预测.luckyDirection}</p>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg" style={{ background: "rgba(74,222,128,0.04)", border: "1px solid rgba(74,222,128,0.1)" }}>
+                  <p className="text-xs mb-1 font-medium" style={{ color: "rgba(74,222,128,0.7)" }}>天机建议</p>
+                  <p className="text-xs leading-relaxed" style={{ color: "rgba(201,184,150,0.6)" }}>{result.事情预测.advice}</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* 重新占卜按钮 */}
         <motion.div

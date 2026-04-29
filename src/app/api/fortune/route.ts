@@ -276,11 +276,27 @@ function get运势等级(score: number): { level: string; desc: string } {
   return { level: "凶", desc: "运势低迷，需修身养德" };
 }
 
+// ==================== 类型定义 ====================
+interface FortuneResult {
+  事情预测?: {
+    task: string;
+    category: string;
+    timeframe: string;
+    successRate: number;
+    level: string;
+    analysis: string;
+    advice: string;
+    luckyTime: string;
+    luckyDirection: string;
+    keyFactor: string;
+  };
+}
+
 // ==================== POST 请求处理 ====================
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, gender, birthDate, birthHour, birthPlace, bloodType, zodiacSign, maritalStatus, education, schoolYear, occupation, hobby, luckyNumber } = body;
+    const { name, gender, birthDate, birthHour, birthPlace, bloodType, zodiacSign, maritalStatus, education, graduationYear, residence, phoneLastDigits, dreamCareer, recentMood, taskDescription, taskCategory, taskTimeframe, occupation, hobby, luckyNumber } = body;
 
     // 参数验证
     if (!name || !gender || !birthDate || !birthHour) {
@@ -320,7 +336,7 @@ export async function POST(request: NextRequest) {
     );
 
     // 6. 生成确定性哈希用于分数计算
-    const hashBase = `${name}${gender}${birthDate}${birthHour}${birthPlace || ""}${bloodType || ""}${zodiacSign || ""}${maritalStatus || ""}${education || ""}${schoolYear || ""}${occupation || ""}${hobby || ""}${luckyNumber || ""}`;
+    const hashBase = `${name}${gender}${birthDate}${birthHour}${birthPlace || ""}${bloodType || ""}${zodiacSign || ""}${maritalStatus || ""}${education || ""}${graduationYear || ""}${occupation || ""}${hobby || ""}${luckyNumber || ""}${residence || ""}${phoneLastDigits || ""}${dreamCareer || ""}${recentMood || ""}`;
     const hash = hashString(hashBase);
 
     // 7. 计算各项运势分数
@@ -419,6 +435,79 @@ export async function POST(request: NextRequest) {
       },
     ];
 
+    // Task prediction logic
+    let 事情预测: FortuneResult["事情预测"] | undefined;
+
+    if (taskDescription && taskCategory) {
+      const taskHash = hashString(`${hashBase}${taskDescription}${taskCategory}${taskTimeframe}`);
+      const rawRate = generateScore(taskHash, 100);
+
+      // Adjust based on relevant fortune scores
+      const categoryMap: Record<string, string> = {
+        "学业考试": "学业运",
+        "求职面试": "事业运",
+        "创业投资": "财富运",
+        "感情表白": "感情运",
+        "健康养生": "健康运",
+        "升职加薪": "事业运",
+        "考试考证": "学业运",
+        "人际交往": "感情运",
+        "其他": "总运势",
+      };
+      const scoreMap: Record<string, number> = { "事业运": 事业运, "财富运": 财富运, "感情运": 感情运, "健康运": 健康运, "学业运": 学业运, "总运势": 总运势 };
+      const relevantScore = scoreMap[categoryMap[taskCategory] || "总运势"] || 总运势;
+
+      // Blend: 40% from fortune, 60% from task-specific hash
+      const successRate = Math.round(relevantScore * 0.4 + rawRate * 0.6);
+
+      // Determine level
+      let level: string;
+      if (successRate >= 85) level = "大吉 · 天时地利人和";
+      else if (successRate >= 70) level = "上吉 · 把握时机可成";
+      else if (successRate >= 55) level = "中吉 · 需多加努力";
+      else if (successRate >= 40) level = "小凶 · 恐有阻碍";
+      else level = "凶 · 建议暂缓行动";
+
+      // Generate analysis based on 五行 and task
+      const analysisTemplates = [
+        `结合您的命盘分析，此事与您的${命卦.element}行命卦${命卦Result.number === 6 || 命卦Result.number === 7 ? "相合" : "需调和"}。日主${日柱.天干}属${日主五行}行，${日主数量 >= 2 ? "自身气场充沛" : "需借外力补益"}。当前五行${最旺[0]}偏旺，${最弱[0]}偏弱，做此事时宜借助${最旺[0]}行之力，避开${最弱[0]}行之不利时段。`,
+        `从四柱八字来看，您的年柱${年柱.天干}${年柱.地支}与月柱${月柱.天干}${月柱.地支}形成${月柱.天干 === 年柱.天干 ? "比肩" : "相生"}之势。命主${日柱.天干}得令于${命卦.element}行，做此事${总运势 >= 65 ? "整体运势支持" : "需谨慎行事"}。纳音属${纳音}，${纳音.includes("金") || 纳音.includes("火") ? "做事宜果断" : "做事宜稳重"}。`,
+      ];
+      const analysis = analysisTemplates[(taskHash + 总运势) % analysisTemplates.length];
+
+      // Lucky time
+      const luckyTimes = ["辰时(7-9点)", "巳时(9-11点)", "午时(11-13点)", "未时(13-15点)", "申时(15-17点)", "酉时(17-19点)"];
+      const luckyTime = luckyTimes[(taskHash + 3) % luckyTimes.length];
+
+      // Lucky direction based on 五行
+      const directionMap: Record<string, string> = { 金: "西方", 木: "东方", 水: "北方", 火: "南方", 土: "中央" };
+      const luckyDirection = directionMap[最旺[0]] || "东方";
+
+      // Key factor
+      const keyFactors = ["贵人相助", "自身努力", "时机把握", "心态平和", "坚持到底", "贵人引路", "水到渠成", "厚积薄发"];
+      const keyFactor = keyFactors[(taskHash + 1) % keyFactors.length];
+
+      // Advice
+      const adviceTemplates = [
+        `建议在${luckyDirection}方位进行此事，选择${luckyTime}为最佳行动时段。可佩戴${命卦.element}行饰品增强运势。若遇阻碍，宜退一步静待${五行相生[日主五行] || "土"}行旺时再图进取。`,
+        `此事成功之关键在于${keyFactor}。建议提前做好准备，在${luckyDirection}方位布局，${luckyTime}行动为佳。近期宜多行善事、广结善缘，以增运势。忌急躁冒进，以稳为上。`,
+      ];
+      const advice = adviceTemplates[(taskHash + successRate) % adviceTemplates.length];
+
+      事情预测 = {
+        task: taskDescription,
+        category: taskCategory,
+        timeframe: taskTimeframe || "未指定",
+        successRate,
+        level,
+        analysis,
+        advice,
+        luckyTime,
+        luckyDirection,
+        keyFactor,
+      };
+    }
+
     // 构建返回结果
     const result = {
       // 基本信息
@@ -426,7 +515,7 @@ export async function POST(request: NextRequest) {
       gender,
       birthDate,
       birthHourName: 时辰名称[birthHour] || birthHour,
-      schoolYear: schoolYear || "未提供",
+      schoolYear: graduationYear || "未提供",
       occupation: occupation || "未提供",
       age: new Date().getFullYear() - birthYear,
 
@@ -480,6 +569,9 @@ export async function POST(request: NextRequest) {
 
       // 每日宜忌
       每日宜忌,
+
+      // 事情预测
+      ...(事情预测 ? { 事情预测 } : {}),
 
       // 推演过程
       推演过程: 推演步骤,

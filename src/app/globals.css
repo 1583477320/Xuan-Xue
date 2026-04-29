@@ -631,3 +631,23 @@
 .mystical-button-hero:active {
   transform: translateY(-1px) scale(0.99);
 }
+
+/* Textarea styles */
+textarea.mystical-input {
+  background: rgba(15, 8, 25, 0.6) !important;
+  border: 1px solid rgba(212, 168, 83, 0.2) !important;
+  color: #f0e6d3 !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+textarea.mystical-input:focus {
+  border-color: rgba(212, 168, 83, 0.5) !important;
+  box-shadow: 0 0 15px rgba(212, 168, 83, 0.15) !important;
+  outline: none !important;
+}
+
+textarea.mystical-input::placeholder {
+  color: rgba(154, 139, 114, 0.6) !important;
+}
