@@ -423,7 +423,9 @@ function MiniInputField({ label, placeholder, value, onChange, error, type = "te
 function InputPhase({ onSubmit }: { onSubmit: (data: FormData) => void }) {
   const [name, setName] = useState("");
   const [gender, setGender] = useState("");
-  const [birthDate, setBirthDate] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [birthMonth, setBirthMonth] = useState("");
+  const [birthDay, setBirthDay] = useState("");
   const [birthHour, setBirthHour] = useState("");
   const [birthPlace, setBirthPlace] = useState("");
   const [bloodType, setBloodType] = useState("");
@@ -448,18 +450,18 @@ function InputPhase({ onSubmit }: { onSubmit: (data: FormData) => void }) {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = "请输入姓名";
     if (!gender) e.gender = "请选择性别";
-    if (!birthDate) e.birthDate = "请选择出生日期";
+    if (!birthYear || !birthMonth || !birthDay) e.birthDate = "请选择出生日期";
     if (!birthHour) e.birthHour = "请选择出生时辰";
     setErrors(e);
     return Object.keys(e).length === 0;
-  }, [name, gender, birthDate, birthHour]);
+  }, [name, gender, birthYear, birthMonth, birthDay, birthHour]);
 
   const handleSubmit = () => {
     if (!validate()) return;
     const fd = new FormData();
     fd.append("name", name.trim());
     fd.append("gender", gender);
-    fd.append("birthDate", birthDate);
+    fd.append("birthDate", `${birthYear}-${birthMonth}-${birthDay}`);
     fd.append("birthHour", birthHour);
     if (birthPlace) fd.append("birthPlace", birthPlace.trim());
     if (bloodType) fd.append("bloodType", bloodType);
@@ -481,7 +483,16 @@ function InputPhase({ onSubmit }: { onSubmit: (data: FormData) => void }) {
   };
 
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 80 }, (_, i) => currentYear - 60 + i);
+
+  // 根据年月计算当月天数
+  const maxDay = useMemo(() => {
+    if (!birthYear || !birthMonth) return 31;
+    const daysInMonth = new Date(Number(birthYear), Number(birthMonth), 0).getDate();
+    return daysInMonth;
+  }, [birthYear, birthMonth]);
+
+  // 使用 key 强制 Select 在天数变化时重置
+  const daySelectKey = `${birthYear}-${birthMonth}`;
 
   return (
     <motion.div
@@ -615,18 +626,45 @@ function InputPhase({ onSubmit }: { onSubmit: (data: FormData) => void }) {
               </div>
             </div>
 
-            {/* 出生日期 + 出生时辰 一行 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* 出生日期 + 出生时辰 */}
+            <div className="space-y-4">
               <div className="space-y-1.5">
                 <Label className="mystical-label text-xs">出生日期</Label>
-                <Input
-                  type="date"
-                  className="mystical-input text-sm"
-                  style={{ padding: "9px 12px" }}
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  max={new Date().toISOString().split("T")[0]}
-                />
+                <div className="grid grid-cols-3 gap-2">
+                  {/* 年 */}
+                  <Select value={birthYear} onValueChange={(v) => { setBirthYear(v); }}>
+                    <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                      <SelectValue placeholder="年" />
+                    </SelectTrigger>
+                    <SelectContent className="mystical-select max-h-56">
+                      {Array.from({ length: 80 }, (_, i) => currentYear - 79 + i).map((y) => (
+                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {/* 月 */}
+                  <Select value={birthMonth} onValueChange={(v) => { setBirthMonth(v); }}>
+                    <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                      <SelectValue placeholder="月" />
+                    </SelectTrigger>
+                    <SelectContent className="mystical-select max-h-56">
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                        <SelectItem key={m} value={String(m).padStart(2, "0")}>{m}月</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {/* 日 */}
+                  <Select key={daySelectKey} value={birthDay} onValueChange={(v) => { setBirthDay(v); }}>
+                    <SelectTrigger className="mystical-input text-sm" style={{ padding: "9px 12px" }}>
+                      <SelectValue placeholder="日" />
+                    </SelectTrigger>
+                    <SelectContent className="mystical-select max-h-56">
+                      {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
+                        <SelectItem key={d} value={String(d).padStart(2, "0")}>{d}日</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 {errors.birthDate && <p className="text-xs" style={{ color: "#c0392b" }}>{errors.birthDate}</p>}
               </div>
               <div className="space-y-1.5">
