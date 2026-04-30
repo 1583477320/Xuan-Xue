@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useSyncExternalStore } from "react";
+
+const emptySubscribe = () => () => {};
+function useIsClient() {
+  return useSyncExternalStore(emptySubscribe, () => true, () => false);
+}
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -101,18 +106,22 @@ const 运势图标: Record<string, string> = {
 
 // ==================== 背景粒子组件 ====================
 function FloatingParticles() {
+  const isClient = useIsClient();
   const particles = useMemo(
-    () =>
-      Array.from({ length: 30 }, (_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        size: Math.random() * 3 + 1,
-        duration: Math.random() * 15 + 10,
-        delay: Math.random() * 15,
-        opacity: Math.random() * 0.5 + 0.1,
-      })),
-    []
+    () => isClient
+      ? Array.from({ length: 30 }, (_, i) => ({
+          id: i,
+          left: Math.random() * 100,
+          size: Math.random() * 3 + 1,
+          duration: Math.random() * 15 + 10,
+          delay: Math.random() * 15,
+          opacity: Math.random() * 0.5 + 0.1,
+        }))
+      : [],
+    [isClient]
   );
+
+  if (!isClient || particles.length === 0) return <div className="fixed inset-0 pointer-events-none z-0" />;
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -316,18 +325,23 @@ function FiveElementsChart({ distribution }: { distribution: Record<string, numb
 
 // ==================== 星空背景 ====================
 function StarField() {
+  const isClient = useIsClient();
   const stars = useMemo(
-    () =>
-      Array.from({ length: 60 }, (_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        top: Math.random() * 100,
-        size: Math.random() * 2 + 1,
-        duration: Math.random() * 4 + 2,
-        delay: Math.random() * 5,
-      })),
-    []
+    () => isClient
+      ? Array.from({ length: 60 }, (_, i) => ({
+          id: i,
+          left: Math.random() * 100,
+          top: Math.random() * 100,
+          size: Math.random() * 2 + 1,
+          duration: Math.random() * 4 + 2,
+          delay: Math.random() * 5,
+        }))
+      : [],
+    [isClient]
   );
+
+  if (!isClient || stars.length === 0) return <div className="star-field fixed inset-0 pointer-events-none z-0" />;
+
   return (
     <div className="star-field fixed inset-0 pointer-events-none z-0">
       {stars.map((s) => (
