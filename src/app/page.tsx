@@ -17,6 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import HomeHub, { type ToyMode } from "@/components/toys/home-hub";
+import WoodenFishToy from "@/components/toys/wooden-fish";
+import DailyFortuneToy from "@/components/toys/daily-fortune";
+import SharePoster from "@/components/toys/share-poster";
 
 // ==================== 类型定义 ====================
 interface FortuneResult {
@@ -1584,6 +1588,22 @@ function ResultPhase({ result, onReset }: { result: FortuneResult; onReset: () =
           </motion.div>
         )}
 
+        {/* 分享海报 */}
+        <motion.div
+          className="mystical-card glow-card p-5 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.3 }}
+        >
+          <h3 className="golden-text text-lg font-bold mb-2" style={{ letterSpacing: "0.1em" }}>
+            晒 一 晒
+          </h3>
+          <p className="text-xs mb-4" style={{ color: "rgba(201,184,150,0.5)" }}>
+            生成你的专属命盘海报，去朋友圈卷一卷
+          </p>
+          <SharePoster data={result} />
+        </motion.div>
+
         {/* 重新占卜按钮 */}
         <motion.div
           className="flex justify-center pt-4 pb-8"
@@ -1610,6 +1630,7 @@ function ResultPhase({ result, onReset }: { result: FortuneResult; onReset: () =
 
 // ==================== 主页面 ====================
 export default function HomePage() {
+  const [mode, setMode] = useState<"home" | ToyMode>("home");
   const [phase, setPhase] = useState<"input" | "divination" | "result">("input");
   const [fortuneResult, setFortuneResult] = useState<FortuneResult | null>(null);
   const [formJson, setFormJson] = useState<Record<string, string>>({});
@@ -1637,19 +1658,33 @@ export default function HomePage() {
     setPhase("input");
   }, []);
 
+  const backHome = useCallback(() => setMode("home"), []);
+
   return (
     <main className="min-h-screen mystical-bg relative overflow-hidden">
       <FloatingParticles />
 
       <AnimatePresence mode="wait">
-        {phase === "input" && (
-          <InputPhase key="input" onSubmit={handleSubmit} />
-        )}
-        {phase === "divination" && (
-          <DivinationPhase key="divination" onComplete={handleDivinationComplete} formData={formJson} />
-        )}
-        {phase === "result" && fortuneResult && (
-          <ResultPhase key="result" result={fortuneResult} onReset={handleReset} />
+        {mode === "home" && <HomeHub key="home" onSelect={setMode} />}
+        {mode === "fish" && <WoodenFishToy key="fish" onBack={backHome} />}
+        {mode === "daily" && <DailyFortuneToy key="daily" onBack={backHome} />}
+        {mode === "fortune" && (
+          <div key="fortune" className="relative">
+            <button onClick={backHome} className="toy-back-btn fixed top-4 left-4 z-40">
+              ← 天机阁
+            </button>
+            <AnimatePresence mode="wait">
+              {phase === "input" && (
+                <InputPhase key="input" onSubmit={handleSubmit} />
+              )}
+              {phase === "divination" && (
+                <DivinationPhase key="divination" onComplete={handleDivinationComplete} formData={formJson} />
+              )}
+              {phase === "result" && fortuneResult && (
+                <ResultPhase key="result" result={fortuneResult} onReset={handleReset} />
+              )}
+            </AnimatePresence>
+          </div>
         )}
       </AnimatePresence>
     </main>

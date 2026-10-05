@@ -651,3 +651,208 @@ textarea.mystical-input:focus {
 textarea.mystical-input::placeholder {
   color: rgba(154, 139, 114, 0.6) !important;
 }
+
+/* ==================== 玩具模块样式 ==================== */
+
+/* 首页卡片 */
+.hub-card {
+  background: rgba(15, 8, 25, 0.78);
+  border: 1px solid rgba(212, 168, 83, 0.18);
+  border-radius: 16px;
+  padding: 22px;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.hub-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(212, 168, 83, 0.4), transparent 45%, transparent 55%, rgba(212, 168, 83, 0.25));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.hub-card:hover {
+  border-color: rgba(212, 168, 83, 0.45);
+  background: rgba(22, 12, 34, 0.85);
+  box-shadow: 0 12px 40px rgba(212, 168, 83, 0.12), 0 0 60px rgba(212, 168, 83, 0.06);
+}
+
+.hub-card-primary {
+  background: linear-gradient(160deg, rgba(212, 168, 83, 0.14), rgba(15, 8, 25, 0.85) 60%);
+  border-color: rgba(212, 168, 83, 0.45);
+  box-shadow: 0 0 40px rgba(212, 168, 83, 0.12);
+}
+
+/* 小胶囊按钮 */
+.toy-pill {
+  background: rgba(212, 168, 83, 0.06);
+  border: 1px solid rgba(212, 168, 83, 0.25);
+  color: rgba(212, 168, 83, 0.85);
+  border-radius: 999px;
+  padding: 7px 18px;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toy-pill:hover {
+  background: rgba(212, 168, 83, 0.14);
+  border-color: rgba(212, 168, 83, 0.45);
+}
+
+.toy-pill-active {
+  background: linear-gradient(135deg, rgba(212, 168, 83, 0.9), rgba(184, 134, 11, 0.9));
+  color: #0a0612;
+  border-color: transparent;
+  font-weight: 700;
+}
+
+/* 返回按钮 */
+.toy-back-btn {
+  background: transparent;
+  border: 1px solid rgba(212, 168, 83, 0.2);
+  color: rgba(201, 184, 150, 0.7);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toy-back-btn:hover {
+  color: #d4a853;
+  border-color: rgba(212, 168, 83, 0.4);
+}
+
+/* 木鱼按钮 */
+.wf-fish {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  filter: drop-shadow(0 0 26px rgba(212, 168, 83, 0.18));
+  transition: filter 0.3s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.wf-fish:active {
+  filter: drop-shadow(0 0 40px rgba(212, 168, 83, 0.45));
+}
+
+/* 木鱼吐槽气泡 */
+.fish-bubble {
+  position: relative;
+  max-width: 260px;
+  padding: 9px 16px;
+  border-radius: 14px;
+  background: rgba(20, 12, 30, 0.95);
+  border: 1px solid rgba(212, 168, 83, 0.3);
+  color: #f0e6d3;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: 0 6px 24px rgba(212, 168, 83, 0.1);
+}
+
+.fish-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: rgba(20, 12, 30, 0.95);
+  border-right: 1px solid rgba(212, 168, 83, 0.3);
+  border-bottom: 1px solid rgba(212, 168, 83, 0.3);
+}
+
+/* 连击徽章 */
+.combo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(212, 168, 83, 0.18), rgba(248, 113, 113, 0.14));
+  border: 1px solid rgba(240, 212, 138, 0.4);
+  box-shadow: 0 0 24px rgba(212, 168, 83, 0.2);
+}
+
+.combo-x {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  background: linear-gradient(135deg, #fff2c4, #f0d48a, #d4a853);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.combo-mult {
+  font-size: 0.7rem;
+  color: rgba(248, 113, 113, 0.9);
+  padding-left: 10px;
+  border-left: 1px solid rgba(212, 168, 83, 0.3);
+}
+
+/* Tab 导航 */
+.toy-tab {
+  background: rgba(212, 168, 83, 0.05);
+  border: 1px solid rgba(212, 168, 83, 0.18);
+  color: rgba(201, 184, 150, 0.7);
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toy-tab:hover {
+  border-color: rgba(212, 168, 83, 0.4);
+  color: #d4a853;
+}
+
+.toy-tab-active {
+  background: linear-gradient(135deg, rgba(212, 168, 83, 0.9), rgba(184, 134, 11, 0.9));
+  color: #0a0612;
+  border-color: transparent;
+  font-weight: 700;
+}
+
+/* 成就解锁提示 */
+.achievement-toast {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(20, 12, 30, 0.96);
+  border: 1px solid rgba(212, 168, 83, 0.45);
+  box-shadow: 0 8px 30px rgba(212, 168, 83, 0.2), 0 0 50px rgba(212, 168, 83, 0.08);
+}
+
+.achievement-toast::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  background: radial-gradient(circle at 20% 50%, rgba(212, 168, 83, 0.25), transparent 60%);
+  pointer-events: none;
+}
